@@ -1,6 +1,7 @@
 import { searchMovies } from "@/lib/data/movies";
 import MovieCard from "@/components/movie/MovieCard";
 import MaxWidthWrapper from "@/components/wrapper/MaxWidthWrapper";
+import { Movie } from "@prisma/client";
 
 interface Props {
   searchParams: Promise<{
@@ -25,7 +26,7 @@ export default async function Page({ searchParams }: Props) {
           <p className="text-gray-400">No movies found.</p>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-            {movies.map((movie) => (
+            {movies.map((movie: Movie) => (
               <MovieCard expand={false} key={movie.id} movie={movie} />
             ))}
           </div>
