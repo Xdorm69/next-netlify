@@ -127,3 +127,27 @@
     @apply font-sans;
   }
 }
+
+@layer utilities {
+  .sidebar-container {
+    @apply fixed left-4 top-4 rounded shadow bg-white/10 backdrop-blur-sm h-[calc(100vh-32px)] p-4;
+  }
+  .sidebar-icon {
+    @apply p-2 rounded opacity-70 hover:opacity-100 hover:bg-white/20 cursor-pointer flex items-center gap-3 font-mono text-sm;
+  }
+  .seperator {
+    @apply border-t border-white/20 my-2;
+  }
+  .bg-gradient {
+    @apply bg-linear-to-tr from-purple-900 to-background opacity-30;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

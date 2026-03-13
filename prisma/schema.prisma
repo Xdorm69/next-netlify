@@ -1,0 +1,135 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id    String  @id @default(cuid())
+  email String  @unique
+  name  String?
+
+  interactions Interaction[]
+  watchHistory WatchHistory[]
+
+  createdAt DateTime @default(now())
+}
+
+model Movie {
+  id           String  @id
+  title        String
+  overview     String?
+  posterPath   String?
+  backdropPath String?
+
+  releaseDate DateTime?
+  popularity  Float?
+
+  genres MovieGenre[]
+
+  interactions Interaction[]
+  watchHistory WatchHistory[]
+
+  movieActor   MovieActor[]
+  movieKeyword MovieKeyword[]
+
+  similarSource SimilarMovie[] @relation("MovieSource")
+  similarTarget SimilarMovie[] @relation("MovieTarget")
+
+  createdAt DateTime @default(now())
+}
+
+model Genre {
+  id   Int    @id
+  name String
+
+  movies MovieGenre[]
+}
+
+model MovieGenre {
+  movieId String
+  genreId Int
+
+  movie Movie @relation(fields: [movieId], references: [id])
+  genre Genre @relation(fields: [genreId], references: [id])
+
+  @@id([movieId, genreId])
+}
+
+model Interaction {
+  id String @id @default(cuid())
+
+  userId  String
+  movieId String
+
+  rating  Float?
+  watched Boolean  @default(false)
+  liked   Boolean?
+
+  timestamp DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id])
+  movie Movie @relation(fields: [movieId], references: [id])
+
+  @@unique([userId, movieId])
+}
+
+model WatchHistory {
+  id String @id @default(cuid())
+
+  userId  String
+  movieId String
+
+  progress  Float
+  watchedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id])
+  movie Movie @relation(fields: [movieId], references: [id])
+}
+
+model Actor {
+  id   Int    @id
+  name String
+
+  movies MovieActor[]
+}
+
+model MovieActor {
+  movieId String
+  actorId Int
+
+  movie Movie @relation(fields: [movieId], references: [id])
+  actor Actor @relation(fields: [actorId], references: [id])
+
+  @@id([movieId, actorId])
+}
+
+model Keyword {
+  id   Int    @id
+  name String
+
+  movies MovieKeyword[]
+}
+
+model MovieKeyword {
+  movieId   String
+  keywordId Int
+
+  movie   Movie   @relation(fields: [movieId], references: [id])
+  keyword Keyword @relation(fields: [keywordId], references: [id])
+
+  @@id([movieId, keywordId])
+}
+
+model SimilarMovie {
+  movieId   String
+  similarId String
+  score     Float?
+
+  movie   Movie @relation("MovieSource", fields: [movieId], references: [id])
+  similar Movie @relation("MovieTarget", fields: [similarId], references: [id])
+
+  @@id([movieId, similarId])
+}
