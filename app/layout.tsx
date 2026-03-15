@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import Sidebar from "@/components/sidbar/Sidebar";
 import Header from "@/components/home/Header";
 import MaxWidthWrapper from "@/components/wrapper/MaxWidthWrapper";
+import AuthProvider from "@/utils/AuthProvider";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -33,25 +34,27 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}
       >
-        <div className="bg-gradient fixed inset-0 -z-10" />
+        <AuthProvider>
+          <div className="bg-gradient fixed inset-0 -z-10" />
 
-        <div className="flex min-h-screen">
-          {/* SIDEBAR */}
-          <Sidebar />
+          <div className="flex min-h-screen">
+            {/* SIDEBAR */}
+            <Sidebar />
 
-          {/* MAIN CONTENT */}
-          <main className="flex-1 lg:ml-60">
-            <div className="py-6">
-              <MaxWidthWrapper>
-                <Header />
-              </MaxWidthWrapper>
-            </div>
+            {/* MAIN CONTENT */}
+            <main className="flex-1 lg:ml-60">
+              <div className="py-6">
+                <MaxWidthWrapper>
+                  <Header />
+                </MaxWidthWrapper>
+              </div>
 
-            <div className="">
-              <>{children}</>
-            </div>
-          </main>
-        </div>
+              <div className="">
+                <>{children}</>
+              </div>
+            </main>
+          </div>
+        </AuthProvider>
       </body>
     </html>
   );

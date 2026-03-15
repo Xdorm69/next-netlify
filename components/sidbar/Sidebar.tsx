@@ -17,6 +17,7 @@ import {
   Menu,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { signOut } from "next-auth/react";
 
 const Sidebar = () => {
   const pathname = usePathname();
@@ -85,7 +86,7 @@ const Sidebar = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 cursor-pointer">
+          <div onClick={() => signOut({callbackUrl: "/login"})} className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 cursor-pointer">
             <LogOut size={18} />
             Logout
           </div>
