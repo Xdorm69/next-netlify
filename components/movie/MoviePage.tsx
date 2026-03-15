@@ -1,10 +1,8 @@
 "use client";
-import { Movie } from "@prisma/client";
 import Image from "next/image";
 import { Play, Plus, ThumbsUp, ChevronLeft } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MovieWithRelations } from "@/types/movie";
-
 
 interface Props {
   movie: MovieWithRelations | null;
@@ -13,7 +11,25 @@ interface Props {
 export default function MoviePage({ movie }: Props) {
   if (!movie) return <h1>No Movie Found</h1>;
 
+  const hasUserLiked = async (): Promise<boolean> => {
+    try {
+      const res = await fetch(`/movies/${movie.id}/like`);
+      const data = await res.json();
+      if (data.liked) {
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Failed to check if user liked movie");
+      return false;
+    }
+  };
+
   const [isLiked, setIsLiked] = useState(false);
+  
+  useEffect(() => {
+    hasUserLiked().then((liked) => setIsLiked(liked));
+  }, []);
 
   const backdropUrl = movie.backdropPath
     ? `https://image.tmdb.org/t/p/original${movie.backdropPath}`
@@ -28,6 +44,18 @@ export default function MoviePage({ movie }: Props) {
     : "";
   const rating = movie.popularity ? Math.round(movie.popularity * 10) / 10 : 0;
 
+  const handleLike = async () => {
+    setIsLiked((prev) => !prev);
+    const res = await fetch(`/movies/${movie.id}/like`, {
+      method: "POST",
+      body: JSON.stringify({ id: movie.id, like: !isLiked }),
+    });
+    if (!res.ok) {
+      console.error("Failed to like movie");
+      return;
+    }
+    console.log(res);
+  };
 
   return (
     <div className="min-h-screen bg-background text-white relative ">
@@ -41,7 +69,6 @@ export default function MoviePage({ movie }: Props) {
           priority
         />
         <div className="absolute inset-0 bg-linear-to-t from-black via-black/50 to-transparent" />
-
 
         {/* HERO CONTENT */}
         <div className="absolute bottom-0 left-0 right-0 p-8">
@@ -81,7 +108,10 @@ export default function MoviePage({ movie }: Props) {
                     <Plus size={20} />
                   </button>
 
-                  <button className="p-3 rounded border border-white/60 hover:bg-white/10 transition">
+                  <button
+                    onClick={() => handleLike()}
+                    className="p-3 rounded border border-white/60 hover:bg-white/10 transition"
+                  >
                     <ThumbsUp size={20} />
                   </button>
                 </div>

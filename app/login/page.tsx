@@ -14,16 +14,21 @@ export default function LoginPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    const res = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
+    try {
+      const res = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
 
-    if (!res?.error) {
-      router.push("/");
-    } else {
-      alert("Invalid credentials");
+      if (!res?.error) {
+        router.push("/");
+      } else {
+        alert("Invalid credentials");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("An error occurred");
     }
   }
 

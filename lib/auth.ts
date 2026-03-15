@@ -1,73 +1,81 @@
 import { NextAuthOptions } from "next-auth";
-import bcrypt from "bcryptjs";
 import CredentialsProvider from "next-auth/providers/credentials";
 import prisma from "./prisma";
+import bcrypt from "bcryptjs";
 
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
+
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
+
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Missing credentials");
+          return null;
         }
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
         });
 
-        if (!user) {
-          throw new Error("User not found");
-        }
+        if (!user) return null;
 
-        const passwordMatch = await bcrypt.compare(
+        const isValid = await bcrypt.compare(
           credentials.password,
           user.password,
         );
 
-        if (!passwordMatch) {
-          throw new Error("Invalid password");
-        }
+        if (!isValid) return null;
 
-        return {
-          id: user.id,
-          email: user.email,
-          role: user.role,
-          name: user.name,
-        };
+        return user;
       },
     }),
   ],
+
   session: {
     strategy: "jwt",
   },
-  secret: process.env.NEXTAUTH_SECRET,
+
   callbacks: {
     async jwt({ token, user }) {
+      // First login
       if (user) {
-        // @ts-ignore
         token.id = user.id;
-        // @ts-ignore
         token.role = user.role;
+        token.onboardingCompleted = user.onboardingCompleted;
       }
+
+      // Refresh onboarding status from DB
+      const dbUser = await prisma.user.findUnique({
+        where: { id: token.id as string },
+        select: { onboardingCompleted: true },
+      });
+
+      if (dbUser) {
+        token.onboardingCompleted = dbUser.onboardingCompleted;
+      }
+
       return token;
     },
+
     async session({ session, token }) {
       if (session.user) {
-        // @ts-ignore
         session.user.id = token.id;
-        // @ts-ignore
         session.user.role = token.role;
+        session.user.onboardingCompleted = token.onboardingCompleted;
       }
 
       return session;
     },
   },
+
   pages: {
     signIn: "/login",
   },
+
+  secret: process.env.NEXTAUTH_SECRET,
 };

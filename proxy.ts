@@ -3,26 +3,30 @@ import { NextResponse } from "next/server";
 
 export default withAuth(
   function middleware(req) {
+    const token = req.nextauth.token;
+    const { pathname } = req.nextUrl;
+
+    // Not logged in
+    if (!token && pathname !== "/login" && pathname !== "/signup") {
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
+
+    // Onboarding check
+    if (token && !token.onboardingCompleted && pathname !== "/onboarding") {
+      return NextResponse.redirect(new URL("/onboarding", req.url));
+    }
+
     return NextResponse.next();
   },
   {
     callbacks: {
-      authorized: ({ token }) => {
-        return !!token;
-      },
+      authorized: () => true,
     },
   },
 );
 
 export const config = {
   matcher: [
-    /*
-      Protect everything except:
-      - login
-      - signup
-      - nextauth
-      - public files
-    */
-    "/((?!login|signup|api/auth|api/signup|_next/static|_next/image|favicon.ico).*)",
+    "/((?!api/auth|api/onboarding|_next/static|_next/image|favicon.ico|login|signup).*)",
   ],
 };
